@@ -8,11 +8,14 @@
   },
   "app": {
     "withGlobalTauri": true,
+    "macOSPrivateApi": true,
     "windows": [
       {
-        "title": "visual-countdown",
-        "width": 800,
-        "height": 600
+        "title": "Visual Countdown Timer",
+        "width": 500,
+        "height": 500,
+        "titleBarStyle": "Transparent",
+        "resizable": false
       }
     ],
     "security": {
