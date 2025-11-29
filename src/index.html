@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Visual Countdown Timer</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+
+            body {
+                font-family:
+                    "Inter",
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    sans-serif;
+                background: #f5f5f5;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .timer-wrapper {
+                position: relative;
+                width: calc(100vw - 30px);
+                height: calc(100vh - 30px);
+                max-width: calc(100vh - 30px);
+                max-height: calc(100vw - 30px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            svg {
+                width: 100%;
+                height: 100%;
+            }
+
+            svg text {
+                font-family:
+                    "Inter",
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    sans-serif;
+                font-weight: 300;
+                user-select: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="timer-wrapper">
+            <!-- Main Timer SVG -->
+            <svg viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet">
+                <!-- Dial Background -->
+                <circle
+                    cx="250"
+                    cy="250"
+                    r="180"
+                    fill="#ffffff"
+                    stroke="#e5e7eb"
+                    stroke-width="2"
+                />
+
+                <!-- 60-minute tick marks (clickable) -->
+                <g id="tickMarks"></g>
+
+                <!-- Red Disk (decreases as time passes) -->
+                <g id="redDisk">
+                    <path id="redPath" fill="#ef4444" stroke="none" />
+                </g>
+
+                <!-- Numbers outside the disk - mathematically correct positions -->
+                <text
+                    id="num0"
+                    text-anchor="middle"
+                    font-size="20"
+                    fill="#1f2937"
+                >
+                    0
+                </text>
+                <text
+                    id="num5"
+                    text-anchor="middle"
+                    font-size="20"
+                    fill="#1f2937"
+                >
+                    5
+                </text>
+                <text
+                    id="num10"
+                    text-anchor="middle"
+                    font-size="20"
+                    fill="#1f2937"
+                >
+                    10
+                </text>
+                <text
+                    id="num15"
+                    text-anchor="middle"
+                    font-size="20"
+                    fill="#1f2937"
+                >
+                    15
+                </text>
+                <text
+                    id="num20"
+                    text-anchor="middle"
+                    font-size="20"
+                    fill="#1f2937"
+                >
+                    20
+                </text>
+                <text
+                    id="num25"
+                    text-anchor="middle"
+                    font-size="20"
+                    fill="#1f2937"
+                >
+                    25
+                </text>
+                <text
+                    id="num30"
+                    text-anchor="middle"
+                    font-size="20"
+                    fill="#1f2937"
+                >
+                    30
+                </text>
+                <text
+                    id="num35"
+                    text-anchor="middle"
+                    font-size="20"
+                    fill="#1f2937"
+                >
+                    35
+                </text>
+                <text
+                    id="num40"
+                    text-anchor="middle"
+                    font-size="20"
+                    fill="#1f2937"
+                >
+                    40
+                </text>
+                <text
+                    id="num45"
+                    text-anchor="middle"
+                    font-size="20"
+                    fill="#1f2937"
+                >
+                    45
+                </text>
+                <text
+                    id="num50"
+                    text-anchor="middle"
+                    font-size="20"
+                    fill="#1f2937"
+                >
+                    50
+                </text>
+                <text
+                    id="num55"
+                    text-anchor="middle"
+                    font-size="20"
+                    fill="#1f2937"
+                >
+                    55
+                </text>
+
+                <!-- Minimal Center Knob -->
+                <circle
+                    cx="250"
+                    cy="250"
+                    r="15"
+                    fill="#e5e7eb"
+                    stroke="#d1d5db"
+                    stroke-width="2"
+                />
+            </svg>
+        </div>
+
+        <script>
+            let remainingSeconds = 0;
+            let timerInterval = null;
+
+            const redPath = document.getElementById("redPath");
+            const tickMarks = document.getElementById("tickMarks");
+
+            // Calculate correct positions for numbers
+            function positionNumbers() {
+                const centerX = 250;
+                const centerY = 250;
+                const textRadius = 220; // Distance from center for text
+
+                const numbers = [
+                    { id: "num0", minute: 0 },
+                    { id: "num5", minute: 5 },
+                    { id: "num10", minute: 10 },
+                    { id: "num15", minute: 15 },
+                    { id: "num20", minute: 20 },
+                    { id: "num25", minute: 25 },
+                    { id: "num30", minute: 30 },
+                    { id: "num35", minute: 35 },
+                    { id: "num40", minute: 40 },
+                    { id: "num45", minute: 45 },
+                    { id: "num50", minute: 50 },
+                    { id: "num55", minute: 55 },
+                ];
+
+                numbers.forEach(({ id, minute }) => {
+                    const angle = ((minute * 6 - 90) * Math.PI) / 180; // 6 degrees per minute, start at top
+                    const x = centerX + textRadius * Math.cos(angle);
+                    const y = centerY + textRadius * Math.sin(angle) + 10; // +10 for vertical centering
+
+                    const text = document.getElementById(id);
+                    text.setAttribute("x", x);
+                    text.setAttribute("y", y);
+                    text.textContent = minute;
+                });
+            }
+
+            // Create 60 tick marks with clickable zones around the dial
+            function createTickMarks() {
+                const centerX = 250;
+                const centerY = 250;
+                const outerRadius = 178;
+                const innerRadius = 168;
+                const clickZoneOuter = 200; // Larger radius for click zone
+                const clickZoneInner = 140; // Inner radius for click zone
+
+                for (let i = 0; i < 60; i++) {
+                    const angle = ((i * 6 - 90) * Math.PI) / 180;
+                    const isLong = i % 5 === 0;
+                    const tickInner = isLong ? innerRadius - 6 : innerRadius;
+
+                    // Create clickable wedge zone (6 degree segment)
+                    const angleStart = ((i * 6 - 3 - 90) * Math.PI) / 180; // -3 degrees
+                    const angleEnd = ((i * 6 + 3 - 90) * Math.PI) / 180; // +3 degrees
+
+                    // Calculate wedge path points
+                    const outerX1 =
+                        centerX + clickZoneOuter * Math.cos(angleStart);
+                    const outerY1 =
+                        centerY + clickZoneOuter * Math.sin(angleStart);
+                    const outerX2 =
+                        centerX + clickZoneOuter * Math.cos(angleEnd);
+                    const outerY2 =
+                        centerY + clickZoneOuter * Math.sin(angleEnd);
+                    const innerX1 =
+                        centerX + clickZoneInner * Math.cos(angleStart);
+                    const innerY1 =
+                        centerY + clickZoneInner * Math.sin(angleStart);
+                    const innerX2 =
+                        centerX + clickZoneInner * Math.cos(angleEnd);
+                    const innerY2 =
+                        centerY + clickZoneInner * Math.sin(angleEnd);
+
+                    // Create invisible clickable wedge
+                    const wedge = document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "path",
+                    );
+                    const wedgePath = `
+                    M ${innerX1} ${innerY1}
+                    L ${outerX1} ${outerY1}
+                    A ${clickZoneOuter} ${clickZoneOuter} 0 0 1 ${outerX2} ${outerY2}
+                    L ${innerX2} ${innerY2}
+                    A ${clickZoneInner} ${clickZoneInner} 0 0 0 ${innerX1} ${innerY1}
+                    Z
+                `;
+                    wedge.setAttribute("d", wedgePath);
+                    wedge.setAttribute("fill", "transparent");
+                    wedge.setAttribute("stroke", "none");
+                    wedge.style.cursor = "pointer";
+                    wedge.dataset.minute = i;
+
+                    // Create the visible tick mark line
+                    const x1 = centerX + tickInner * Math.cos(angle);
+                    const y1 = centerY + tickInner * Math.sin(angle);
+                    const x2 = centerX + outerRadius * Math.cos(angle);
+                    const y2 = centerY + outerRadius * Math.sin(angle);
+
+                    const line = document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "line",
+                    );
+                    line.setAttribute("x1", x1);
+                    line.setAttribute("y1", y1);
+                    line.setAttribute("x2", x2);
+                    line.setAttribute("y2", y2);
+                    line.setAttribute("stroke", "#1f2937");
+                    line.setAttribute("stroke-width", isLong ? "2.5" : "1");
+                    line.style.pointerEvents = "none"; // Don't intercept clicks
+                    line.dataset.minute = i;
+
+                    // Hover effects on wedge
+                    wedge.addEventListener("mouseenter", () => {
+                        line.setAttribute("stroke", "#ef4444");
+                        line.setAttribute("stroke-width", "3");
+                    });
+
+                    wedge.addEventListener("mouseleave", () => {
+                        line.setAttribute("stroke", "#1f2937");
+                        line.setAttribute("stroke-width", isLong ? "2.5" : "1");
+                    });
+
+                    // Click handler on wedge
+                    wedge.addEventListener("click", () => {
+                        startTimerFromMinute(i);
+                    });
+
+                    // Add wedge first (behind), then tick mark
+                    tickMarks.appendChild(wedge);
+                    tickMarks.appendChild(line);
+                }
+            }
+
+            // Draw the red disk based on remaining time
+            function updateRedDisk() {
+                const centerX = 250;
+                const centerY = 250;
+                const radius = 160;
+
+                const maxSeconds = 60 * 60;
+                const progress = remainingSeconds / maxSeconds;
+                const angle = progress * 360;
+
+                if (angle === 0) {
+                    redPath.setAttribute("d", "");
+                    return;
+                }
+
+                const startAngle = -90;
+                const endAngle = startAngle + angle;
+
+                const startRad = (startAngle * Math.PI) / 180;
+                const endRad = (endAngle * Math.PI) / 180;
+
+                const x1 = centerX + radius * Math.cos(startRad);
+                const y1 = centerY + radius * Math.sin(startRad);
+                const x2 = centerX + radius * Math.cos(endRad);
+                const y2 = centerY + radius * Math.sin(endRad);
+
+                const largeArc = angle > 180 ? 1 : 0;
+
+                const pathData = `
+                M ${centerX} ${centerY}
+                L ${x1} ${y1}
+                A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2}
+                Z
+            `;
+
+                redPath.setAttribute("d", pathData);
+            }
+
+            // Start timer from a specific minute
+            function startTimerFromMinute(minute) {
+                // Clear any existing timer
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+
+                // Set remaining seconds based on clicked minute
+                remainingSeconds = minute * 60;
+                updateRedDisk();
+
+                // Start countdown
+                timerInterval = setInterval(() => {
+                    if (remainingSeconds > 0) {
+                        remainingSeconds--;
+                        updateRedDisk();
+                    } else {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                    }
+                }, 1000);
+            }
+
+            // Initialize
+            positionNumbers();
+            createTickMarks();
+            updateRedDisk();
+        </script>
+    </body>
+</html>
