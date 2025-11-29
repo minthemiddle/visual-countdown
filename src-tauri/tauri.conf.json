@@ -12,10 +12,14 @@
     "windows": [
       {
         "title": "Visual Countdown Timer",
-        "width": 500,
-        "height": 500,
+        "width": 480,
+        "height": 480,
         "titleBarStyle": "Transparent",
-        "resizable": false
+        "resizable": true,
+        "minWidth": 180,
+        "minHeight": 180,
+        "maxWidth": 700,
+        "maxHeight": 700
       }
     ],
     "security": {

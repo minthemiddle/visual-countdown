@@ -33,10 +33,10 @@
 
             .timer-wrapper {
                 position: relative;
-                width: calc(100vw - 30px);
-                height: calc(100vh - 30px);
-                max-width: calc(100vh - 30px);
-                max-height: calc(100vw - 30px);
+                width: calc(100vw - var(--padding));
+                height: calc(100vh - var(--padding));
+                max-width: calc(100vh - var(--padding));
+                max-height: calc(100vw - var(--padding));
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -54,12 +54,58 @@
                     BlinkMacSystemFont,
                     "Segoe UI",
                     sans-serif;
-                font-weight: 300;
+                font-weight: var(--font-weight);
                 user-select: none;
+                font-size: var(--font-size);
+                letter-spacing: var(--font-letter-spacing);
+                font-smooth: never;
+            }
+
+            /* Size Presets */
+            .preset-xxs {
+                --padding: 5px;
+                --font-size: 20px;
+                --control-font-size: 9px;
+                --font-weight: 600;
+                --font-letter-spacing: 1px;
+            }
+
+            .preset-xs {
+                --padding: 20px;
+                --font-size: 20px;
+                --control-font-size: 10px;
+                --font-weight: 500;
+                --font-letter-spacing: 2px;
+            }
+
+            .preset-s {
+                --padding: 26px;
+                --font-size: 20px;
+                --control-font-size: 11px;
+            }
+
+            .preset-m {
+                --padding: 30px;
+                --font-size: 20px;
+                --control-font-size: 12px;
+            }
+
+            .preset-l {
+                --padding: 40px;
+                --font-size: 28px;
+                --control-font-size: 14px;
+                --font-weight: 300;
+            }
+
+            /* Default to m preset */
+            body {
+                --padding: 30px;
+                --font-size: 20px;
+                --control-font-size: 12px;
             }
         </style>
     </head>
-    <body>
+    <body class="preset-m">
         <div class="timer-wrapper">
             <!-- Main Timer SVG -->
             <svg viewBox="0 0 500 500" preserveAspectRatio="xMidYMid meet">
@@ -197,6 +243,88 @@
 
             const redPath = document.getElementById("redPath");
             const tickMarks = document.getElementById("tickMarks");
+            const body = document.body;
+
+            // Window preset management
+            const windowPresets = {
+                "preset-xxs": {
+                    width: 220,
+                    height: 220,
+                    className: "preset-xxs",
+                },
+                "preset-xs": {
+                    width: 300,
+                    height: 300,
+                    className: "preset-xs",
+                },
+                "preset-s": {
+                    width: 400,
+                    height: 400,
+                    className: "preset-s",
+                },
+                "preset-m": {
+                    width: 500,
+                    height: 500,
+                    className: "preset-m",
+                },
+                "preset-l": {
+                    width: 700,
+                    height: 700,
+                    className: "preset-l",
+                },
+            };
+
+            // Apply preset
+            function applyPreset(presetKey) {
+                const preset = windowPresets[presetKey];
+                if (!preset) return;
+
+                // Update body class
+                body.className = preset.className;
+
+                // Resize window using Tauri API if available
+                if (window.__TAURI__ && window.__TAURI__.core) {
+                    window.__TAURI__.core
+                        .invoke("resize_window", {
+                            width: preset.width,
+                            height: preset.height,
+                        })
+                        .catch((err) => {
+                            console.log("Could not resize window:", err);
+                        });
+                }
+            }
+
+            // Keyboard shortcuts
+            document.addEventListener("keydown", (e) => {
+                if (e.ctrlKey || e.metaKey) {
+                    switch (e.key) {
+                        case "1":
+                            e.preventDefault();
+                            applyPreset("preset-xxs");
+                            break;
+                        case "2":
+                            e.preventDefault();
+                            applyPreset("preset-xs");
+                            break;
+                        case "3":
+                            e.preventDefault();
+                            applyPreset("preset-s");
+                            break;
+                        case "4":
+                            e.preventDefault();
+                            applyPreset("preset-m");
+                            break;
+                        case "5":
+                            e.preventDefault();
+                            applyPreset("preset-l");
+                            break;
+                    }
+                }
+            });
+
+            // Initialize with m preset
+            applyPreset("preset-m");
 
             // Calculate correct positions for numbers
             function positionNumbers() {
