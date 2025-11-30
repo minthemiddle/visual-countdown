@@ -1,7 +1,17 @@
-# Tauri + Vanilla
+# Visual Countdown Timer
 
-This template should help get you started developing with Tauri in vanilla HTML, CSS and Javascript.
+A distraction-free 60-minute visual timer.  
+Click any tick to start a countdown from that minute mark; a red sector shrinks as time passes, and each minute boundary briefly flashes its tick to signal progress.  
+Minute labels can be hidden (`Cmd/Ctrl + H`) to maximize dial space.  
+Window presets (`Cmd/Ctrl + 1`–`5`) resize the app for quick context switches.
 
-## Recommended IDE Setup
+![Visual Countdown Timer screenshot](screenshot.png)
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+## macOS Gatekeeper note
+
+If macOS blocks the downloaded app as “damaged” or “unverified,” clear the quarantine flag via *terminal* app:
+
+```bash
+xattr -rd com.apple.quarantine "/Applications/Visual Countdown Timer.app"
+open "/Applications/Visual Countdown Timer.app"
+```
