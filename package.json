@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "tauri": "tauri",
-    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
+    "build-standalone": "node scripts/build-standalone.cjs"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
