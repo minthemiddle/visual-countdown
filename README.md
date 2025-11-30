@@ -15,3 +15,10 @@ If macOS blocks the downloaded app as “damaged” or “unverified,” clear t
 xattr -rd com.apple.quarantine "/Applications/Visual Countdown Timer.app"
 open "/Applications/Visual Countdown Timer.app"
 ```
+
+## Development
+
+- Install deps: `npm install`
+- Run tests: `npm test`
+- Dev Tauri app: `npm run tauri dev`
+- Build bundle: `npm run tauri build`
