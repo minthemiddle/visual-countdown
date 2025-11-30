@@ -103,6 +103,11 @@
                 --font-size: 20px;
                 --control-font-size: 12px;
             }
+
+            /* Hide number labels and let the dial breathe when toggled off */
+            .labels-hidden svg text {
+                display: none;
+            }
         </style>
     </head>
     <body class="preset-m">
@@ -243,7 +248,26 @@
 
             const redPath = document.getElementById("redPath");
             const tickMarks = document.getElementById("tickMarks");
+            const svg = document.querySelector("svg");
             const body = document.body;
+            const viewBoxes = {
+                withLabels: "0 0 500 500",
+                withoutLabels: "40 40 420 420",
+            };
+            let labelsVisible = true;
+
+            function setLabelVisibility(visible) {
+                labelsVisible = visible;
+                body.classList.toggle("labels-hidden", !visible);
+                svg.setAttribute(
+                    "viewBox",
+                    visible ? viewBoxes.withLabels : viewBoxes.withoutLabels,
+                );
+            }
+
+            function toggleLabelVisibility() {
+                setLabelVisibility(!labelsVisible);
+            }
 
             // Window preset management
             const windowPresets = {
@@ -279,8 +303,11 @@
                 const preset = windowPresets[presetKey];
                 if (!preset) return;
 
-                // Update body class
-                body.className = preset.className;
+                // Update body class without dropping other toggles (e.g. labels-hidden)
+                Object.values(windowPresets).forEach(({ className }) => {
+                    body.classList.remove(className);
+                });
+                body.classList.add(preset.className);
 
                 // Resize window using Tauri API if available
                 if (window.__TAURI__ && window.__TAURI__.core) {
@@ -319,9 +346,16 @@
                             e.preventDefault();
                             applyPreset("preset-l");
                             break;
+                        case "h":
+                            e.preventDefault();
+                            toggleLabelVisibility();
+                            break;
                     }
                 }
             });
+
+            // Start with labels visible and correct viewBox
+            setLabelVisibility(true);
 
             // Initialize with m preset
             applyPreset("preset-m");
