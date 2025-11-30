@@ -245,11 +245,13 @@
         <script>
             let remainingSeconds = 0;
             let timerInterval = null;
+            let lastWholeMinutes = null;
 
             const redPath = document.getElementById("redPath");
             const tickMarks = document.getElementById("tickMarks");
             const svg = document.querySelector("svg");
             const body = document.body;
+            const tickLineMap = new Map();
             const viewBoxes = {
                 withLabels: "0 0 500 500",
                 withoutLabels: "40 40 420 420",
@@ -267,6 +269,22 @@
 
             function toggleLabelVisibility() {
                 setLabelVisibility(!labelsVisible);
+            }
+
+            function highlightTick(minute) {
+                const tick = tickLineMap.get(minute);
+                if (!tick) return;
+
+                tick.line.setAttribute("stroke", "#ef4444");
+                tick.line.setAttribute("stroke-width", "3");
+
+                setTimeout(() => {
+                    tick.line.setAttribute("stroke", "#1f2937");
+                    tick.line.setAttribute(
+                        "stroke-width",
+                        tick.isLong ? "2.5" : "1",
+                    );
+                }, 350);
             }
 
             // Window preset management
@@ -466,6 +484,7 @@
                     line.setAttribute("stroke-width", isLong ? "2.5" : "1");
                     line.style.pointerEvents = "none"; // Don't intercept clicks
                     line.dataset.minute = i;
+                    tickLineMap.set(i, { line, isLong });
 
                     // Hover effects on wedge
                     wedge.addEventListener("mouseenter", () => {
@@ -536,6 +555,7 @@
 
                 // Set remaining seconds based on clicked minute
                 remainingSeconds = minute * 60;
+                lastWholeMinutes = Math.ceil(remainingSeconds / 60);
                 updateRedDisk();
 
                 // Start countdown
@@ -543,6 +563,12 @@
                     if (remainingSeconds > 0) {
                         remainingSeconds--;
                         updateRedDisk();
+
+                        const currentMinutes = Math.ceil(remainingSeconds / 60);
+                        if (currentMinutes !== lastWholeMinutes) {
+                            highlightTick(currentMinutes);
+                            lastWholeMinutes = currentMinutes;
+                        }
                     } else {
                         clearInterval(timerInterval);
                         timerInterval = null;
